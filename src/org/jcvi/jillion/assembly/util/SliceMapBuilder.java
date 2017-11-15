@@ -20,6 +20,7 @@
  ******************************************************************************/
 package org.jcvi.jillion.assembly.util;
 
+import java.time.LocalTime;
 import java.util.NoSuchElementException;
 import java.util.function.Predicate;
 
@@ -55,6 +56,9 @@ public final class SliceMapBuilder<R extends AssembledRead> implements Builder<S
 	}
 	
 	public SliceMapBuilder(Contig<R> contig, QualitySequenceDataStore readQualities){
+		
+		System.out.println("In SliceMapBuilder constructor " + LocalTime.now());
+		
 		if(contig ==null){
 			throw new NullPointerException("contig can not be null");
 		}
@@ -95,18 +99,20 @@ public final class SliceMapBuilder<R extends AssembledRead> implements Builder<S
 	
 	@Override
 	public SliceMap build() {
+		
+		System.out.println("Total reads number: " +contig.getNumberOfReads());
 		StreamingIterator<R> iter=null;
 		try {			
 			if(filter ==null){
 				iter = contig.getReadIterator();
 			}else{
 				iter = new FilteredIterator(contig.getReadIterator());
-			}
+			}					
 			if(qualities == null){
 				//no quality datastore set use default quality
 				return CompactedSliceMap.create(iter, contig.getConsensusSequence(), defaultQuality, qualityValueStrategy );			
 			}
-			return CompactedSliceMap.create(iter,contig.getConsensusSequence(), qualities, qualityValueStrategy );
+			return CompactedSliceMap.create(contig,contig.getConsensusSequence(), qualities, qualityValueStrategy );
 		} catch (DataStoreException e) {
 			throw new IllegalStateException("error building SliceMap",e);
 		}finally{
