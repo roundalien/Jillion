@@ -24,6 +24,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -136,12 +137,16 @@ public final class CompactedSliceMap implements SliceMap {
 			GapQualityValueStrategy qualityValueStrategy, PhredQuality defaultQuality)
 			throws DataStoreException {
 		
-    	List<SliceBuilder> builders = Collections.synchronizedList(initializeListSliceBuilders(consensusSequence));
-    	System.out.println("The length of consensus: " + builders.size());
+//    	List<SliceBuilder> builders = Collections.synchronizedList(initializeListSliceBuilders(consensusSequence));
+    	SliceBuilder builders[] = initializeSliceBuilders(consensusSequence);
+    	System.out.println("The length of consensus: " + builders.length);
+    	
+    	this.slices = new Slice[builders.length];
+    	
   		
     	try{
     		
-    		contig.reads().parallel().throwingForEach(read -> {
+    		contig.reads().parallel().sorted(Comparator.comparing(AssembledRead::getGappedStartOffset)).throwingForEach(read -> {
     			int start = (int)read.getGappedStartOffset();    			
     			int i=0;
     			String id =read.getId();
@@ -167,9 +172,9 @@ public final class CompactedSliceMap implements SliceMap {
     				PhredQuality quality = validRangeGappedQualitiesIterator.next();   				
     		
     				
-    				synchronized(builders){    				
-    					builders.set(start+i,builders.get(start+i).add(id, base, quality, dir));    					
-    				}  
+//    				synchronized(builders){    				
+    					builders[start+i].add(id, base, quality, dir);    					
+//    				}  
     				
     				i++;
        			}    			
@@ -178,9 +183,9 @@ public final class CompactedSliceMap implements SliceMap {
     		System.out.println("Before building slices " + LocalTime.now());
     		
     		//done building
-    		this.slices = new Slice[builders.size()];
+//    		this.slices = new Slice[builders.size()];
     		for(int i=0; i<slices.length; i++){
-    			slices[i]= builders.get(i).build();
+    			slices[i]= builders[i].build();
     		}    		
     		System.out.println("After building slices " + LocalTime.now());
     		
@@ -201,6 +206,8 @@ public final class CompactedSliceMap implements SliceMap {
     }
 
     
+    /*
+    
     private ArrayList<SliceBuilder> initializeListSliceBuilders(NucleotideSequence consensus){
     	int size = (int)consensus.getLength();
     	ArrayList <SliceBuilder> builders = new ArrayList<SliceBuilder>(size);
@@ -212,7 +219,7 @@ public final class CompactedSliceMap implements SliceMap {
 		
     	return builders;
     }
-    
+    */
     private Iterator<PhredQuality> createNewDefaultQualityIterator(
 			final PhredQuality defaultQuality) {
 		return new Iterator<PhredQuality>(){

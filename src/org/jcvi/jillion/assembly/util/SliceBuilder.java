@@ -258,7 +258,7 @@ public final class SliceBuilder implements Builder<Slice>{
      * @return this
      * @throws NullPointerException if any parameter is null.
      */
-    public SliceBuilder add(String id, Nucleotide base, PhredQuality quality, Direction dir){
+    public synchronized SliceBuilder add(String id, Nucleotide base, PhredQuality quality, Direction dir){
     	
     	CompactedSliceElement compacted = new CompactedSliceElement(id, base, quality, dir);
     	int value = compacted.getEncodedDirAndNucleotide() <<8;
