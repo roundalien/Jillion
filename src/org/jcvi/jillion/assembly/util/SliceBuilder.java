@@ -21,6 +21,7 @@
 package org.jcvi.jillion.assembly.util;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.jcvi.jillion.core.Direction;
@@ -43,7 +44,8 @@ public final class SliceBuilder implements Builder<Slice>{
 
 	
     private GrowableShortArray bytes = new GrowableShortArray(1024);
-    private List<String> ids = new ArrayList<String>();
+//  private List<String> ids = new ArrayList<String>();
+    private List<String> ids = Collections.synchronizedList(new ArrayList<String>());
     private Nucleotide consensus;
     /**
      * {@code SliceElementFilter} is used to remove
@@ -258,7 +260,7 @@ public final class SliceBuilder implements Builder<Slice>{
      * @return this
      * @throws NullPointerException if any parameter is null.
      */
-    public synchronized SliceBuilder add(String id, Nucleotide base, PhredQuality quality, Direction dir){
+    public SliceBuilder add(String id, Nucleotide base, PhredQuality quality, Direction dir){
     	
     	CompactedSliceElement compacted = new CompactedSliceElement(id, base, quality, dir);
     	int value = compacted.getEncodedDirAndNucleotide() <<8;
